@@ -12,9 +12,9 @@ namespace MES.WebAPI.Controllers;
 public class PartDataController : ControllerBase
 {
     private readonly DataContext _context;
-    private readonly List<StationOptions> _stationConfig;
+    private readonly List<StationOptionsConfiguration> _stationConfig;
 
-    public PartDataController(DataContext context, List<StationOptions> stationConfig)
+    public PartDataController(DataContext context, List<StationOptionsConfiguration> stationConfig)
     {
         _context = context;
         _stationConfig = stationConfig;
@@ -45,7 +45,7 @@ public class PartDataController : ControllerBase
     [HttpGet("PartCounts")]
     public async Task<ActionResult<PartCountDto>> GetPartCounts()
     {
-        string lastStationName = _stationConfig.Last().StationName;
+        string lastStationName = _stationConfig.Last().Name;
 
         int goodParts = await _context.Parts
             .Where(p => p.Status == PLCOperationsEnum.Good.ToString() && p.LastStationComplete == lastStationName)

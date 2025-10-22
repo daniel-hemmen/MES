@@ -20,14 +20,14 @@ internal class PLCStation
 
 
 
-    public PLCStation(StationOptions stationOptions, ClientSimulationOptions clientOptions, List<string> serialNumberList)
+    public PLCStation(StationOptionsConfiguration stationOptions, ClientSimulationOptions clientOptions, List<string> serialNumberList)
     {
-        _client = new PLCClient(stationOptions.IpAddress, int.Parse(stationOptions.Port), stationOptions.StationName);
+        _client = new PLCClient(stationOptions.IpAddress, int.Parse(stationOptions.Port), stationOptions.Name);
         _name = clientOptions.StationName;
         _serialNumbers = serialNumberList;
         _snArrayIndex = int.Parse(clientOptions.SerialNumberArrayIndex);
         _minCycleTime = int.Parse(clientOptions.MinCycleTime);
-        _maxCycleTime = int.Parse(clientOptions.MaxCycleTimel);
+        _maxCycleTime = int.Parse(clientOptions.MaxCycleTime);
         _results = stationOptions.Results;
     }
 

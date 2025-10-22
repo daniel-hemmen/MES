@@ -1,4 +1,5 @@
 ﻿using MES.Common;
+using MES.Common.Validators;
 using System.Text.Json;
 
 namespace MES.PLC;
@@ -8,7 +9,7 @@ internal class Program
     static async Task Main(string[] args)
     {
         List<ClientSimulationOptions> clientSimulationOptions;
-        List<StationOptions> stationOptions;
+        List<StationOptionsConfiguration> stationOptions;
 
         JsonSerializerOptions jsonOptions = new JsonSerializerOptions
         {
@@ -21,9 +22,10 @@ internal class Program
             string clientConfigPath = Path.Combine(AppContext.BaseDirectory, "Config", "ClientSimulationConfig.json");
             string optionsConfigPath = Path.Combine(AppContext.BaseDirectory, "Config", "StationConfig.json");
             clientSimulationOptions = JsonSerializer.Deserialize<List<ClientSimulationOptions>>(File.ReadAllText(clientConfigPath), jsonOptions);
-            stationOptions = JsonSerializer.Deserialize<List<StationOptions>>(File.ReadAllText(optionsConfigPath), jsonOptions);
-            ValidateConfig.ValidateStationConfig(stationOptions);
-            ValidateConfig.ValidateClientSimulationConfig(clientSimulationOptions, stationOptions);
+            stationOptions = JsonSerializer.Deserialize<List<StationOptionsConfiguration>>(File.ReadAllText(optionsConfigPath), jsonOptions);
+
+            StationOptionsValidator.Validate(stationOptions);
+            ClientSimulationOptionsValidator.ValidateClientSimulationConfig(clientSimulationOptions, stationOptions);
         }
         catch (Exception e)
         {
@@ -44,7 +46,7 @@ internal class Program
         foreach (var stationOption in stationOptions)
         {
             var clientSimulationOption = clientSimulationOptions
-                .Find(c => c.StationName == stationOption.StationName);
+                .Find(c => c.StationName == stationOption.Name);
 
             stations.Add(new PLCStation(stationOption, clientSimulationOption, serialGen.serialNumbers));
         }

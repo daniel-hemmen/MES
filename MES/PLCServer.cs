@@ -22,11 +22,11 @@ internal class PLCServer : IDisposable
     private readonly IServiceProvider _serviceProvider;
 
 
-    public PLCServer(StationOptions options, string dbPath, ILogger<PLCServer> logger, IServiceProvider serviceProvider)
+    public PLCServer(StationOptionsConfiguration options, string dbPath, ILogger<PLCServer> logger, IServiceProvider serviceProvider)
     {
         _port = int.Parse(options.Port);
         _ipAddress = IPAddress.Parse(options.IpAddress);
-        _name = options.StationName;
+        _name = options.Name;
         _results = options.Results;
         _dbPath = dbPath;
         _logger = logger;

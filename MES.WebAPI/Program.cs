@@ -1,4 +1,5 @@
 using MES.Common;
+using MES.Common.Validators;
 using MES.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -9,9 +10,9 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        List<StationOptions> stationConfig;
+        List<StationOptionsConfiguration> stationConfig;
 
-        
+
 
         JsonSerializerOptions jsonOptions = new JsonSerializerOptions
         {
@@ -21,8 +22,8 @@ public class Program
         try
         {
             string optionsConfigPath = Path.Combine(AppContext.BaseDirectory, "Config", "StationConfig.json");
-            stationConfig = JsonSerializer.Deserialize<List<StationOptions>>(File.ReadAllText(optionsConfigPath), jsonOptions);
-            ValidateConfig.ValidateStationConfig(stationConfig);
+            stationConfig = JsonSerializer.Deserialize<List<StationOptionsConfiguration>>(File.ReadAllText(optionsConfigPath), jsonOptions);
+            StationOptionsValidator.Validate(stationConfig);
         }
         catch (Exception e)
         {

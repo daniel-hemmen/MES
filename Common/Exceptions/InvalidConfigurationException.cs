@@ -1,6 +1,4 @@
-﻿
-
-namespace MES.Common;
+﻿namespace MES.Common.Exceptions;
 
 public class InvalidConfigurationException : Exception
 {
