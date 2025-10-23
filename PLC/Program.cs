@@ -1,58 +1,40 @@
 ﻿using MES.Common;
 using MES.Common.Validators;
+using System.Configuration;
 using System.Text.Json;
 
 namespace MES.PLC;
 
 internal class Program
 {
+    private static readonly string _clientConfigPath = Path.Combine(AppContext.BaseDirectory, "Config", "ClientSimulationConfig.json");
+    private static readonly string _stationConfigPath = Path.Combine(AppContext.BaseDirectory, "Config", "StationConfig.json");
+    private static readonly JsonSerializerOptions _serializerOptions = new() { PropertyNameCaseInsensitive = true };
+
     static async Task Main(string[] args)
     {
-        List<ClientSimulationOptions> clientSimulationOptions;
-        List<StationOptionsConfiguration> stationOptions;
+        var clientSimulationOptions = GetOptions<ClientSimulationOptions>(_clientConfigPath);
+        var stationOptions = GetOptions<StationOptionsConfiguration>(_stationConfigPath);
 
-        JsonSerializerOptions jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
-        //Read station configuration and client configuration from the configuration files and verify the values are valid
-        try
-        {
-            string clientConfigPath = Path.Combine(AppContext.BaseDirectory, "Config", "ClientSimulationConfig.json");
-            string optionsConfigPath = Path.Combine(AppContext.BaseDirectory, "Config", "StationConfig.json");
-            clientSimulationOptions = JsonSerializer.Deserialize<List<ClientSimulationOptions>>(File.ReadAllText(clientConfigPath), jsonOptions);
-            stationOptions = JsonSerializer.Deserialize<List<StationOptionsConfiguration>>(File.ReadAllText(optionsConfigPath), jsonOptions);
-
-            StationOptionsValidator.Validate(stationOptions);
-            ClientSimulationOptionsValidator.ValidateClientSimulationConfig(clientSimulationOptions, stationOptions);
-        }
-        catch (Exception e)
-        {
-
-            Console.WriteLine($"Error loading configuration: {e.Message}");
-            Console.ReadKey();
-            return;
-        }
+        StationOptionsValidator.Validate(stationOptions);
+        ClientSimulationOptionsValidator.Validate(stationOptions, clientSimulationOptions);
 
         // Create a serial number generator for the simulation
-        SerialNumberGenerator serialGen = new SerialNumberGenerator("AA", 0, 6, stationOptions.Count);
+        var serialGen = new SerialNumberGenerator("AA", 0, 6, stationOptions.Count);
 
         /* Create a PLC station for each station defined in the configuration file and add it to a list. The station is
          * what simulates the physical station on the manufacturing line.
          */
-        List<PLCStation> stations = new List<PLCStation>();
+        List<PLCStation> stations = [];
 
         foreach (var stationOption in stationOptions)
         {
-            var clientSimulationOption = clientSimulationOptions
-                .Find(c => c.StationName == stationOption.Name);
-
+            var clientSimulationOption = clientSimulationOptions.Single(c => c.StationName == stationOption.Name);
             stations.Add(new PLCStation(stationOption, clientSimulationOption, serialGen.serialNumbers));
         }
 
         // Create a coordinator to manage the PLC stations
-        Coordinator coordinator = new Coordinator(stations);
+        var coordinator = new Coordinator(stations);
 
 
         while (true)
@@ -61,6 +43,13 @@ internal class Program
             await coordinator.Coordinate(); // Start the coordination of PLC stations
             coordinator.Reset(); // Reset the coordinator for the next run
         }
+    }
 
+    private static List<T> GetOptions<T>(string filePath)
+    {
+        var file = File.ReadAllText(filePath);
+        var options = JsonSerializer.Deserialize<List<T>>(file, _serializerOptions) ?? throw new ConfigurationErrorsException($"Could not deserialize {typeof(T).Name}");
+
+        return options;
     }
 }

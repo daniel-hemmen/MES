@@ -1,4 +1,6 @@
-﻿namespace MES.Common.Validators
+﻿using MES.Common.Exceptions;
+
+namespace MES.Common.Validators
 {
     public abstract class OptionsValidator
     {
@@ -25,5 +27,12 @@
 
         protected static string FormatMessage(string description, params IEnumerable<string> values)
             => $"{description}: {string.Join(", ", values)}";
+
+        protected static void ThrowInvalidConfigurationException(string fileName, params IEnumerable<string> validationMessages)
+        {
+            var validationMessage = string.Join(Environment.NewLine, $"Validation of {fileName} file failed with messages:", validationMessages);
+
+            throw new InvalidConfigurationException(validationMessage);
+        }
     }
 }

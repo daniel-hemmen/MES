@@ -1,5 +1,4 @@
-﻿using MES.Common.Exceptions;
-using MES.Common.Extensions;
+﻿using MES.Common.Extensions;
 using System.Net;
 
 namespace MES.Common.Validators;
@@ -39,8 +38,7 @@ public class StationOptionsValidator : OptionsValidator
         if (validationMessages.Count == 0)
             return;
 
-        var validationMessage = string.Join(Environment.NewLine, "Validation of ServerStationConfig.json file failed with messages:", validationMessages);
-        throw new InvalidConfigurationException(validationMessage);
+        ThrowInvalidConfigurationException("ServerStationConfig.json", validationMessages);
     }
 
     private static bool TryValidate(StationOptionsConfiguration stationOptions, out List<string> validationMessages)
